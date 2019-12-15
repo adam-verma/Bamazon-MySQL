@@ -64,6 +64,10 @@ function bamazonDBInventoryCheck(userQuantity, useritemID) {
 
   // check the user's desired quantity against the stock quantity
   if (userQuantity <= newRes[0].stock_quantity) {
+    connection.query(`UPDATE products SET stock_quantity = stock_quantity - ${userQuantity} WHERE item_id = ${useritemID}`);
+    // show the total cost of purchase 
+    const totalorderCost = newRes[0].price * userQuantity;
+    console.log(`You made an order for ${newRes[0].product_name} with a total of $${totalorderCost}. Thank you, Come again!`)
   } else {
     console.log(`Our apologies but we are currently out of stock for ${newRes[0].product_name}`);
   }
