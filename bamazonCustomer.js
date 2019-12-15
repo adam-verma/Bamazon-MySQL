@@ -1,4 +1,5 @@
 const mysql = require("mysql");
+const inquirer = require("inquirer");
 
 const connection = mysql.createConnection({
   host: "localhost",
@@ -10,51 +11,54 @@ const connection = mysql.createConnection({
   user: "root",
 
   // Your password
-  password: "",
+  password: "Runescape123!",
   database: "bamazon"
 });
 
-connection.connect(function(err) {
+connection.connect(function (err) {
   if (err) throw err;
   console.log(connection);
   console.log("connected as id " + connection.threadId);
   inquirerOrder();
 });
-  
-  function inquirerOrder() {
-      connection.query("SELECT * FROM products",
-      function(err,res) {
-          if (err) throw err; 
-  
+
+function inquirerOrder() {
+  connection.query("SELECT * FROM products",
+    function (err, res) {
+      if (err) throw err;
+
       productsTable = [];
-      // for loop 
-      for (let i=0; i<res.length; i++) {
-        console.log(`Item ID: ${res[i].item_id} | Product Name: ${res[i].product_name} | Department Name: ${res[i].department_name} | Product Price: ${res[i].price} | Current Stock: ${res[i].stock_quantity}`)
+      // for loop of table fields
+      for (let i = 0; i < res.length; i++) {
+        productsTable.push(`Item ID: ${res[i].item_id} | Product Name: ${res[i].product_name} | Department Name: ${res[i].department_name} | Product Price: ${res[i].price} | Current Stock: ${res[i].stock_quantity}`)
       }
     });
-    inquirer.prompt([
-      {
-        type: "input"
-        , name: "itemID"
-        , message: "What is the product (ID) that you would like to submit?"
-    }
-    ,{
-      type: "input",
-      name: "itemQuantity",
-      message: "How many units of the product would you like to buy?",
-      validate: function(value) {
-        if (isNaN(value) === false) {
-          return true;
-        }
-        return false;
+  inquirer.prompt([{
+    type: "input",
+    name: "itemID",
+    message: "What is the product (ID) that you would like to submit?"
+  }, {
+    type: "input",
+    name: "itemQuantity",
+    message: "How many units of the product would you like to buy?",
+    validate: function (value) {
+      if (isNaN(value) === false) {
+        return true;
       }
+      return false;
     }
-    ]).then(function(user) {
-      // Create variables that take in user input of placed order
-      const userQuantity = user.itemQuantity; 
-      const useritemID = user.itemID 
-      
-      // Use these variables as parameters for function that checks if store has sufficient inventory
-      bamazonDBInventoryCheck(userQuantity,useritemID); 
-    });
-  }
+  }]).then(function (user) {
+    // Create variables that take in user input of placed order
+    const userQuantity = user.itemQuantity;
+    const useritemID = user.itemID
+
+    // Use these variables as parameters for function that checks if store has sufficient inventory
+    bamazonDBInventoryCheck(userQuantity, useritemID);
+  });
+}
+
+function bamazonDBInventoryCheck(userQuantity, useritemID) {
+  connection.query(`SELECT product_name, price, stock_quantity FROM products WHERE item_id = ${useritemID}`, function (err, newRes) {
+  console.log(newRes);
+  })
+};
