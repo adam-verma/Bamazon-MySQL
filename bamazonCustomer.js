@@ -60,7 +60,7 @@ function inquirerOrder() {
 function bamazonDBInventoryCheck(userQuantity, useritemID) {
   connection.query(`SELECT product_name, price, stock_quantity FROM products WHERE item_id = ${useritemID}`, function (err, newRes) {
 
-    if (err) throw err;
+    if (err) throw err; 
 
     // check the user's desired quantity against the stock quantity
     if (userQuantity <= newRes[0].stock_quantity) {
@@ -72,4 +72,5 @@ function bamazonDBInventoryCheck(userQuantity, useritemID) {
       console.log(`Our apologies but we are currently out of stock for ${newRes[0].product_name}`);
     }
   })
+  connection.end(); 
 };
