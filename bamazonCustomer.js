@@ -1,5 +1,6 @@
 const mysql = require("mysql");
 const inquirer = require("inquirer");
+const table = require("console.table");
 
 const connection = mysql.createConnection({
   host: "localhost",
@@ -11,7 +12,7 @@ const connection = mysql.createConnection({
   user: "root",
 
   // Your password
-  password: "Runescape123!",
+  password: "",
   database: "bamazon"
 });
 
@@ -19,20 +20,19 @@ connection.connect(function (err) {
   if (err) throw err;
   console.log(connection);
   console.log("connected as id " + connection.threadId);
-  inquirerOrder();
+  displayInventory()
 });
 
-function inquirerOrder() {
+function displayInventory() {
   connection.query("SELECT * FROM products",
     function (err, res) {
       if (err) throw err;
-
-      productsTable = [];
-      // for loop of table fields
-      for (let i = 0; i < res.length; i++) {
-        productsTable.push(`Item ID: ${res[i].item_id} | Product Name: ${res[i].product_name} | Department Name: ${res[i].department_name} | Product Price: ${res[i].price} | Current Stock: ${res[i].stock_quantity}`)
-      }
+      console.table(res);
     });
+    inquirerOrder();
+}
+
+function inquirerOrder() {
   inquirer.prompt([{
     type: "input",
     name: "itemID",
@@ -60,17 +60,16 @@ function inquirerOrder() {
 function bamazonDBInventoryCheck(userQuantity, useritemID) {
   connection.query(`SELECT product_name, price, stock_quantity FROM products WHERE item_id = ${useritemID}`, function (err, newRes) {
 
-  if (err) throw err;
+    if (err) throw err;
 
-  // check the user's desired quantity against the stock quantity
-  if (userQuantity <= newRes[0].stock_quantity) {
-    connection.query(`UPDATE products SET stock_quantity = stock_quantity - ${userQuantity} WHERE item_id = ${useritemID}`);
-    // show the total cost of purchase 
-    const totalorderCost = newRes[0].price * userQuantity;
-    console.log(`You made an order for ${newRes[0].product_name} with a total of $${totalorderCost}. Thank you, Come again!`)
-  } else {
-    console.log(`Our apologies but we are currently out of stock for ${newRes[0].product_name}`);
-  }
-})
+    // check the user's desired quantity against the stock quantity
+    if (userQuantity <= newRes[0].stock_quantity) {
+      connection.query(`UPDATE products SET stock_quantity = stock_quantity - ${userQuantity} WHERE item_id = ${useritemID}`);
+      // show the total cost of purchase 
+      const totalorderCost = newRes[0].price * userQuantity;
+      console.log(`You made an order for ${newRes[0].product_name} with a total of $${totalorderCost}. Thank you, Come again!`)
+    } else {
+      console.log(`Our apologies but we are currently out of stock for ${newRes[0].product_name}`);
+    }
+  })
 };
-
